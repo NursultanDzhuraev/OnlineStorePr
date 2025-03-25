@@ -3,116 +3,125 @@ package java16.onlinestorepr.service.impl;
 
 
 import jakarta.annotation.PostConstruct;
+import java16.onlinestorepr.config.JwtService;
+import java16.onlinestorepr.dto.request.LoginRequest;
 import java16.onlinestorepr.dto.request.UserRequest;
+import java16.onlinestorepr.dto.response.AuthResponse;
 import java16.onlinestorepr.dto.response.CartResponse;
-import java16.onlinestorepr.dto.response.ProductResponse;
+import java16.onlinestorepr.dto.response.PaginationResponse;
 import java16.onlinestorepr.dto.response.UserResponse;
 import java16.onlinestorepr.emum.Role;
+import java16.onlinestorepr.exceptions.NotFoundException;
 import java16.onlinestorepr.model.User;
 import java16.onlinestorepr.repo.UserRepository;
 import java16.onlinestorepr.repo.jdbc.UserJdbc;
 import java16.onlinestorepr.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserJdbc userJdbc;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
     @Override
     public CartResponse getCartItems(Long userId) {
         return userJdbc.getCartItems(userId);
     }
 
-//    private PasswordEncoder passwordEncoder;
-//
-//    @Autowired
-//    private UserRepository userRepository;
-//
-//    @Autowired
-//    private JdbcTemplate jdbcTemplate;
-//
-//    // Жөнөкөй операция: JPA менен сактоо
-//    public UserResponse saveUser(UserRequest request) {
-//        User user = new User();
-//        user.setFirstName(request.getFirstName());
-//        user.setLastName(request.getLastName());
-//        user.setEmail(request.getEmail());
-//        user.setPassword(request.getPassword());
-//        user.setCreatedDate(LocalDateTime.now());
-//        User savedUser = userRepository.save(user);
-//        return mapToUserResponse(savedUser);
-//    }
-//
-//    // Жөнөкөй операция: JPA менен ID боюнча алуу
-//    public UserResponse getUserById(Long id) {
-//        User user = userRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//        return mapToUserResponse(user);
-//    }
-//
-//    // Татаал сурам: JDBC Template менен колдонуучунун сүйүктүү товарлары менен маалыматын алуу
-//    public UserResponse getUserWithFavorites(Long userId) {
-//        String sql = "SELECT u.id, u.first_name, u.last_name, u.email, " +
-//                "p.id AS product_id, p.name AS product_name, p.price, p.category " +
-//                "FROM users u " +
-//                "LEFT JOIN favorites f ON u.id = f.user_id " +
-//                "LEFT JOIN product p ON f.product_id = p.id " +
-//                "WHERE u.id = ?";
-//
-//        List<UserResponse> result = jdbcTemplate.query(sql, new Object[]{userId}, (rs, rowNum) -> {
-//            UserResponse response = new UserResponse();
-//            response.setId(rs.getLong("id"));
-//            response.setFirstName(rs.getString("first_name"));
-//            response.setLastName(rs.getString("last_name"));
-//            response.setEmail(rs.getString("email"));
-//
-//            // Сүйүктүү товарларды кошуу
-//            if (rs.getLong("product_id") != 0) {
-//                ProductResponse product = null;
-//                product.setId(rs.getLong("product_id"));
-//                product.setName(rs.getString("product_name"));
-//                product.setPrice(rs.getDouble("price"));
-////                product.setCategory(rs.getString("category"));
-//            }
-//            return response;
-//        });
-//
-//        if (result.isEmpty()) {
-//            throw new RuntimeException("User not found");
-//        }
-//        return result.get(0); // Биринчи жыйынтыкты кайтарабыз
-//    }
-//
-//    private UserResponse mapToUserResponse(User user) {
-//        UserResponse response = new UserResponse();
-//        response.setId(user.getId());
-//        response.setFirstName(user.getFirstName());
-//        response.setLastName(user.getLastName());
-//        response.setEmail(user.getEmail());
-//        return response;
-//    }
-//   @PostConstruct
-//    private void init(){
-//        String email = "admin@gmail.com";
-//        User user1 = userRepository.findByEmail(email);
-//        if(user1 == null){
-//            User user = new User();
-//            user.setEmail("admin@gmail.com");
-//            user.setFirstName("admin");
-//            user.setLastName("admin");
-//            user.setPassword(passwordEncoder.encode("admin123"));
-//            user.setCreatedDate(LocalDateTime.now());
-//            user.setRole(Role.ADMIN);
-//            userRepository.save(user);
-//        }
-//    }
+    public String saveUser(UserRequest request) {
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setCreatedDate(LocalDateTime.now());
+        user.setRole(Role.USER);
+         userRepository.save(user);
+        return "Saved successfully";
+    }
+    @Override
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findByIdOrElseThrow(id);
+        return UserResponse.fromUser(user);
+    }
+
+    @Override
+    public ResponseEntity<?> login(LoginRequest loginRequest) {
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean matches = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
+        if (!matches) {
+            throw new BadCredentialsException("Incorrect password or email");
+        }
+        return   ResponseEntity.status(HttpStatus.CREATED)
+                .body(AuthResponse.builder()
+                        .token(jwtService.generateToken(user))
+                        .email(user.getEmail())
+                        .role(user.getRole())
+                        .build());
+    }
+
+    @Override
+    public ResponseEntity<?> update(Long userId, UserRequest userRequest) {
+        User user = userRepository.findByIdOrElseThrow(userId);
+        user.setFirstName(userRequest.getFirstName());
+        user.setLastName(userRequest.getLastName());
+        user.setEmail(userRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        user.setUpdatedDate(LocalDateTime.now());
+        userRepository.save(user);
+        return ResponseEntity.ok(String.format("User updated successfully"));
+    }
+
+    @Override
+    public PaginationResponse<UserResponse> findAll(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber-1, pageSize);
+        Page<User> users = userRepository.findAll(pageable);
+        if (users.getTotalElements() == 0) {
+            throw new NotFoundException("User not found");
+        }
+      var response = new PaginationResponse<UserResponse>();
+        response.setTotalElements(users.getTotalElements());
+        response.setPageNumber(users.getNumber()+1);
+        response.setPageSize(users.getSize());
+        response.setTotalPages(users.getTotalPages());
+        response.setContent(UserResponse.fromListUsers(users.getContent()));
+        return response;
+    }
+
+    @Override
+    public ResponseEntity<?> deleted(Long userId) {
+        User user = userRepository.findByIdOrElseThrow(userId);
+        userRepository.delete(user);
+        return ResponseEntity.status(HttpStatus.OK).body(String.format("User deleted successfully"));
+    }
+
+    @PostConstruct
+    private void init() {
+        String email = "admin@gmail.com";
+        if (!userRepository.findByEmail(email).isPresent()) {
+            User user = new User();
+            user.setEmail(email);
+            user.setFirstName("admin");
+            user.setLastName("admin");
+            user.setPassword(passwordEncoder.encode("admin123"));
+            user.setCreatedDate(LocalDateTime.now());
+            user.setRole(Role.ADMIN);
+            userRepository.save(user);
+        }
+    }
 }
+

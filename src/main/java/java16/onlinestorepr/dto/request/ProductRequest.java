@@ -18,4 +18,5 @@ public class ProductRequest {
     private String characteristic;
     private String madel;
     private List<String> images;
+
 }

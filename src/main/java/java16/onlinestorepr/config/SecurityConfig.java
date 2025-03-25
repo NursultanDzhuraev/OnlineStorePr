@@ -3,7 +3,6 @@ package java16.onlinestorepr.config;
 
 import java16.onlinestorepr.exceptions.NotFoundException;
 import java16.onlinestorepr.repo.UserRepository;
-import java16.onlinestorepr.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +32,13 @@ public class SecurityConfig {
             authorize
                     .requestMatchers(
                             "/**",
+                            "/auth/register",
+                            "/auth/login",
+                            "/api/users/findById/",
+                            "/api/users/userFavoriteFindAll/",
+                            "/api/products/findById/",
+                            "/api/products/findByIdCountLike/",
+                            "/api/products/findAll",
                             "/swagger-ui/index.html/**"
                     )
                     .permitAll()

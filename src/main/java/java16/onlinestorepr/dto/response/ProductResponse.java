@@ -20,19 +20,19 @@ public class ProductResponse {
     private String madel;
     private String characteristic;
 
-//    public static ProductResponse from(Product product) {
-//        return ProductResponse.builder()
-//                .id(product.getId())
-//                .name(product.getName())
-//                .price(product.getPrice())
-//                .category(product.getCategory())
-//                .images(product.getImages())
-//                .characteristic(product.getCharacteristic())
-//                .madel(product.getMadel())
-//                .build();
-//    }
-//
-//    public static List<ProductResponse> fromList(List<Product> products) {
-//        return products.stream().map(ProductResponse::from).toList();
-//    }
+    public static ProductResponse from(Product product) {
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .category(product.getCategory())
+                .images(product.getImages())
+                .characteristic(product.getCharacteristic())
+                .madel(product.getMadel())
+                .build();
+    }
+
+    public static List<ProductResponse> fromList(List<Product> products) {
+        return products.stream().map(ProductResponse::from).toList();
+    }
 }

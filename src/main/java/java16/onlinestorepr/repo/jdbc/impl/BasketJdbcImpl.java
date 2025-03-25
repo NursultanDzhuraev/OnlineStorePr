@@ -44,5 +44,6 @@ public class BasketJdbcImpl implements BasketJdbc {
                 return Long.valueOf(jwt.getClaimAsString("id"));
             }
             throw new RuntimeException("Токенден колдонуучуну аныктоо мүмкүн эмес");
+
         }
 }

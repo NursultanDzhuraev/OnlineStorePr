@@ -1,11 +1,13 @@
 package java16.onlinestorepr.dto.response;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class PaginationResponse<T> {
     private int pageNumber;

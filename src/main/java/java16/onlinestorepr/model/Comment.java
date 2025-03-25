@@ -1,6 +1,7 @@
 package java16.onlinestorepr.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,13 +14,12 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+
     private Long id;
 
-    @Column(name = "comment")
+    @NotNull
     private String comment;
 
-    @Column(name = "created_date")
     private LocalDateTime createdDate;
 
     @ManyToOne

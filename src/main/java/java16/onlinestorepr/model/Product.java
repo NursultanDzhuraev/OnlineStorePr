@@ -1,6 +1,7 @@
 package java16.onlinestorepr.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java16.onlinestorepr.emum.Category;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,13 +16,13 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+
     private Long id;
 
-    @Column(name = "name")
+    @NotNull
     private String name;
 
-    @Column(name = "price")
+    @NotNull
     private Double price;
 
     private Category category;
@@ -31,10 +32,9 @@ public class Product {
 
     private String madel;
 
-    @Column(name = "characteristic")
+
     private String characteristic;
 
-    @Column(name = "is_favorite")
     private Boolean isFavorite;
 
     @ManyToOne(fetch = FetchType.EAGER)

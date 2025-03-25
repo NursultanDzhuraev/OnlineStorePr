@@ -1,6 +1,8 @@
 package java16.onlinestorepr.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java16.onlinestorepr.emum.Role;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,24 +20,21 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+
     private Long id;
 
-    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "email")
+    @Column(unique = true, nullable = false)
     private String email;
-
-    @Column(name = "password")
+    @JsonIgnore
+    @NotNull
     private String password;
 
-    @Column(name = "created_date")
     private LocalDateTime createdDate;
-    @Column(name = "updated_date")
+
     private LocalDateTime updatedDate;
 
     @Enumerated(EnumType.STRING)

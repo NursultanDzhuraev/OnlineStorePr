@@ -1,7 +1,6 @@
 package java16.onlinestorepr.service.impl;
 
 
-
 import java16.onlinestorepr.dto.request.ProductRequest;
 import java16.onlinestorepr.dto.response.*;
 import java16.onlinestorepr.emum.Category;
@@ -10,19 +9,17 @@ import java16.onlinestorepr.repo.ProductRepository;
 import java16.onlinestorepr.repo.jdbc.ProductJdbc;
 import java16.onlinestorepr.service.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
   private final ProductJdbc productJdbc;
+    private final ProductRepository productRepository;
 
 
     @Override
@@ -41,5 +38,22 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseAndLike getProductByIdCountLike(Long productId) {
         return productJdbc.getProductByIdCountLike(productId);
     }
+
+    @Override
+    public ResponseEntity<?> saveProduct(ProductRequest productRequest) {
+        Product product = new Product();
+        product.setName(productRequest.getName());
+        product.setPrice(productRequest.getPrice());
+        product.setImages(productRequest.getImages());
+        product.setCharacteristic(productRequest.getCharacteristic());
+        product.setMadel(productRequest.getMadel());
+        product.setCategory(Category.valueOf(productRequest.getCategory()));
+        product.setIsFavorite(false);
+        productRepository.save(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Successfully saved product");
+    }
+
+
+
 
 }
