@@ -17,5 +17,10 @@ public interface ProductService {
     ProductResponseAndLike getProductByIdCountLike(Long productId);
 
     ResponseEntity<?> saveProduct(ProductRequest productRequest);
+
+    ProductResponse updated(Long productId, ProductRequest productRequest);
+
+    ResponseEntity<?> delete(Long productId);
+
 }
 

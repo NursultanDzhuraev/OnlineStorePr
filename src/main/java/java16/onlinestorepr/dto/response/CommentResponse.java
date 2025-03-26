@@ -27,4 +27,8 @@ public class CommentResponse {
                 .build();
     }
 
+    public static List<CommentResponse> ofList(List<Comment> comments) {
+        return comments.stream().map(CommentResponse::of).toList();
+    }
+
 }

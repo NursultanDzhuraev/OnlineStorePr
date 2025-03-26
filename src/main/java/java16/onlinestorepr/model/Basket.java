@@ -21,6 +21,5 @@ public class Basket {
     private User user;
 
     @ManyToMany
-    @JoinTable(name = "product_id")
     private List<Product> products;
 }

@@ -8,8 +8,8 @@ import java16.onlinestorepr.dto.response.ProductResponseAndComment;
 import java16.onlinestorepr.dto.response.ProductResponseAndLike;
 import java16.onlinestorepr.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -20,15 +20,21 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-
+//   @Secured("ADMION")
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody ProductRequest productRequest) {
         return productService.saveProduct(productRequest);
     }
-
-    @PutMapping()
-
-
+//    @Secured("ADMION")
+    @PutMapping("/update/{productId}")
+    public ProductResponse update(@PathVariable Long productId,  @RequestBody ProductRequest productRequest) {
+        return productService.updated(productId,productRequest);
+    }
+//    @Secured("ADMION")
+    @DeleteMapping("deleted/{productId}")
+    public ResponseEntity<?> delete(@PathVariable Long productId) {
+        return productService.delete(productId);
+    }
 
     @GetMapping("/findAll")
     public PaginationResponse<ProductResponse> getProductWithCategoryAndPrice(

@@ -23,7 +23,7 @@ public class UserController {
     public CartResponse findUserFavorites(@PathVariable Long  userId) {
         return userService.getCartItems(userId);
     }
-    @Secured("ADMIN")
+//    @Secured("ADMIN")
     @PutMapping("/update/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
         return userService.update(userId,userRequest);
@@ -39,7 +39,7 @@ public class UserController {
     public UserResponse findById(@PathVariable Long userId) {
         return userService.getUserById(userId);
     }
-    @Secured("ADMIN")
+//    @Secured("ADMIN")
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
         return userService.deleted(userId);

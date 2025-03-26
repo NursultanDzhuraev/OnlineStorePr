@@ -23,4 +23,9 @@ public class BasketController {
             return ResponseEntity.badRequest().body("Корзина табылган жок же бош");
         }
     }
+
+    @PostMapping("/toggle")
+    public String toggleBasket(@RequestParam Long userId, @RequestParam Long productId) {
+       return basketService.toggleBasket(userId, productId);
+    }
 }

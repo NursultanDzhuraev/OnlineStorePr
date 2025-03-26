@@ -1,10 +1,10 @@
 package java16.onlinestorepr.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import java16.onlinestorepr.emum.Category;
 import lombok.Getter;
 import lombok.Setter;
+import org.antlr.v4.runtime.misc.NotNull;
 
 import java.util.List;
 

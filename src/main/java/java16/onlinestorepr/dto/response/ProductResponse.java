@@ -19,6 +19,7 @@ public class ProductResponse {
     private List<String> images;
     private String madel;
     private String characteristic;
+    private BrandResponse brandResponse;
 
     public static ProductResponse from(Product product) {
         return ProductResponse.builder()

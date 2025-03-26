@@ -1,5 +1,6 @@
 package java16.onlinestorepr.repo.jdbc.impl;
 
+import java16.onlinestorepr.exceptions.NotFoundException;
 import java16.onlinestorepr.repo.jdbc.BasketJdbc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -35,6 +36,47 @@ public class BasketJdbcImpl implements BasketJdbc {
                 .update();
 
         return rowsAffected > 0;
+    }
+
+    @Override
+    public String toggleBasket(Long userId, Long productId) {
+        try {
+                String sql = """
+                        select count(bp.product_id) from
+                         basket_product bp left join basket b on bp.basket_id = b.id
+                         where b.user_id = ? and bp.product_id = ?
+                        """;
+
+            String basketSql = "SELECT id FROM basket WHERE user_id = ?";
+
+            Long basketId = jdbcClient.sql(basketSql)
+                    .param(userId)
+                    .query(Long.class)
+                    .single();
+//
+//            String checkSql = "SELECT COUNT(*) FROM basket_products WHERE basket_id = ? AND product_id = ?";
+            Long count = jdbcClient.sql(sql)
+                    .params(userId, productId)
+                    .query(Long.class)
+                    .single();
+
+
+            if (count > 0) {
+                String deleteSql = "delete from basket_products where basket_id = ? and product_id = ?";
+                jdbcClient.sql(deleteSql)
+                        .params(basketId, productId)
+                        .update();
+                return "removed";
+            } else {
+                String insertSql = "insert into basket_products (basket_id, product_id) values (?, ?)";
+                jdbcClient.sql(insertSql)
+                        .params(basketId, productId)
+                        .update();
+                return "added";
+            }
+        }catch (Exception e){
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     private Long extractUserIdFromToken() {

@@ -65,9 +65,9 @@ public class ProductJdbcImpl implements ProductJdbc {
     public ProductResponseAndLike getProductByIdCountLike(Long productId) {
         String sql = """
             select p.id, p.name, p.price, p.category, p.characteristic, p.madel, p.images,
-                   count(pl.product_id) as like_count
+                   count(f.product_id) as like_count
             from product p
-            left join product_likes pl ON p.id = pl.product_id
+            left join favorites f ON p.id = f.product_id
             where p.id = ?
             group by  p.id, p.name, p.price, p.category, p.characteristic, p.madel, p.images
             """;
