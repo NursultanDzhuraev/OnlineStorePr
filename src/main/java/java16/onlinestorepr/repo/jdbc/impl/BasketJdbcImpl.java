@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Service
+@Repository
 @RequiredArgsConstructor
 public class BasketJdbcImpl implements BasketJdbc {
     private final JdbcClient jdbcClient;
@@ -39,28 +39,14 @@ public class BasketJdbcImpl implements BasketJdbc {
     }
 
     @Override
-    public String toggleBasket(Long userId, Long productId) {
+    public String toggleBasket(Long basketId, Long productId) {
         try {
-                String sql = """
-                        select count(bp.product_id) from
-                         basket_product bp left join basket b on bp.basket_id = b.id
-                         where b.user_id = ? and bp.product_id = ?
-                        """;
 
-            String basketSql = "SELECT id FROM basket WHERE user_id = ?";
-
-            Long basketId = jdbcClient.sql(basketSql)
-                    .param(userId)
+         String checkSql = "SELECT COUNT(*) FROM basket_products WHERE basket_id = ? AND product_id = ?";
+            Long count = jdbcClient.sql(checkSql)
+                    .params(basketId, productId)
                     .query(Long.class)
                     .single();
-//
-//            String checkSql = "SELECT COUNT(*) FROM basket_products WHERE basket_id = ? AND product_id = ?";
-            Long count = jdbcClient.sql(sql)
-                    .params(userId, productId)
-                    .query(Long.class)
-                    .single();
-
-
             if (count > 0) {
                 String deleteSql = "delete from basket_products where basket_id = ? and product_id = ?";
                 jdbcClient.sql(deleteSql)

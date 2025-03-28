@@ -20,17 +20,17 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-//   @Secured("ADMION")
+   @Secured("ADMIN")
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody ProductRequest productRequest) {
         return productService.saveProduct(productRequest);
     }
-//    @Secured("ADMION")
+    @Secured("ADMIN")
     @PutMapping("/update/{productId}")
     public ProductResponse update(@PathVariable Long productId,  @RequestBody ProductRequest productRequest) {
         return productService.updated(productId,productRequest);
     }
-//    @Secured("ADMION")
+    @Secured("ADMIN")
     @DeleteMapping("deleted/{productId}")
     public ResponseEntity<?> delete(@PathVariable Long productId) {
         return productService.delete(productId);

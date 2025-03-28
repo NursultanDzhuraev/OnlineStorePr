@@ -6,12 +6,12 @@ import java16.onlinestorepr.exceptions.NotFoundException;
 import java16.onlinestorepr.repo.jdbc.FavoriteJdbc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Service
+@Repository
 @RequiredArgsConstructor
 public class FavoriteJdbcImpl implements FavoriteJdbc {
 
@@ -49,8 +49,16 @@ public class FavoriteJdbcImpl implements FavoriteJdbc {
 
     public List<ProductResponse> getFavoriteProducts(Long userId) {
         String sql = """
-                select p.id, p.name, p.price, p.category, p.characteristic, p.madel, p.images
+                select
+                    p.id,
+                    p.name,
+                    p.price,
+                    p.category,
+                    p.characteristic,
+                    p.madel,
+                 ARRAY_AGG(pi.images) AS images
                 from product p
+                join product_images pi ON p.id = pi.product_i
                 join favorites f on p.id = f.product_id
                 where f.user_id = ?
                 """;

@@ -6,13 +6,14 @@ import java16.onlinestorepr.repo.jdbc.ProductJdbc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Service
+@Repository
 @Transactional
 @RequiredArgsConstructor
 public class ProductJdbcImpl implements ProductJdbc {
@@ -30,11 +31,19 @@ public class ProductJdbcImpl implements ProductJdbc {
         int offset = (pageNumber - 1) * pageSize;
 
         String sql = """
-                select id, name, price, category, characteristic, madel, images
-                from product
-                where upper(category) = upper(?)
-                order by  price """ + ("ASC".equalsIgnoreCase(ascOrDesc) ? "asc" : "desc") + """
-                limit ? offset ?
+                select 
+                    p.id,
+                    p.name,
+                    p.price,
+                    p.category,
+                    p.characteristic, 
+                    p.madel,  
+                    ARRAY_AGG(pi.images) AS images
+                   from product p
+                   join product_images pi ON p.id = pi.product_i
+                   where upper(category) = upper(?)
+                  order by  price """ + ("ASC".equalsIgnoreCase(ascOrDesc) ? "asc" : "desc") + """
+                  limit ? offset ?
                 """;
 
 
@@ -64,12 +73,20 @@ public class ProductJdbcImpl implements ProductJdbc {
     @Override
     public ProductResponseAndLike getProductByIdCountLike(Long productId) {
         String sql = """
-            select p.id, p.name, p.price, p.category, p.characteristic, p.madel, p.images,
-                   count(f.product_id) as like_count
+            select
+                p.id,
+                p.name,
+                p.price,
+                p.category,
+                p.characteristic,
+                p.madel,
+                count(f.product_id) as like_count
+                ARRAY_AGG(pi.images) AS images
             from product p
+             join product_images pi ON p.id = pi.product_i
             left join favorites f ON p.id = f.product_id
             where p.id = ?
-            group by  p.id, p.name, p.price, p.category, p.characteristic, p.madel, p.images
+            group by  p.id, p.name, p.price, p.category, p.characteristic, p.madel, pi.images
             """;
 
         return jdbcClient.sql(sql)
@@ -92,9 +109,19 @@ public class ProductJdbcImpl implements ProductJdbc {
     @Override
     public ProductResponseAndComment getProductByIdAndComment(Long productId) {
         String productSql = """
-            select id, name, price, category, characteristic, madel, images
-            from product
-            where id = ?
+            
+                SELECT
+                p.id,
+                p.name,
+                p.price,
+                p.category,
+                p.characteristic,
+                p.madel,
+                ARRAY_AGG(pi.images) AS images
+            from product p
+                     join product_images pi ON p.id = pi.product_id
+            WHERE p.id = ?
+            GROUP BY p.id;
             """;
 
         ProductResponse productResponse = jdbcClient.sql(productSql)
@@ -110,7 +137,11 @@ public class ProductJdbcImpl implements ProductJdbc {
                         .build())
                 .single();
         String commentSql = """
-            select c.id, c.comment, c.created_date, u.first_name, u.last_name
+            select c.id,
+                   c.comment,
+                   c.created_date,
+                   u.first_name,
+                   u.last_name
             from comment c
             join users u ON c.user_id = u.id
             where c.product_id = ?

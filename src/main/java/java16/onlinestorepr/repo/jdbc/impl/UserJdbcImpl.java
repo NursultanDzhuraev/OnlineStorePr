@@ -7,14 +7,14 @@ import java16.onlinestorepr.emum.Category;
 import java16.onlinestorepr.repo.jdbc.UserJdbc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+@Repository
 @RequiredArgsConstructor
 public class UserJdbcImpl implements UserJdbc {
 
@@ -33,9 +33,16 @@ public class UserJdbcImpl implements UserJdbc {
         Long basketId = optionalBasketId.get();
 
         String getCartItemsSql = """
-            select p.id, p.name, p.price, p.category, p.characteristic, p.madel, p.images,
-                   bp.quantity
+            select p.id,
+                   p.name,
+                   p.price,
+                   p.category,
+                   p.characteristic,
+                   p.madel,
+                   bp.quantity,
+                ARRAY_AGG(pi.images) AS images
             from product p
+            join product_images pi ON p.id = pi.product_i
             join basket bp ON p.id = bp.product_id
             where bp.basket_id = ?
             """;

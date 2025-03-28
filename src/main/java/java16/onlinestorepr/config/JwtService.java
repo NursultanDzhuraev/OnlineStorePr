@@ -31,7 +31,7 @@ public class JwtService {
         builder.withClaim("id", user.getId());
         builder.withClaim("role", user.getRole().getAuthority());
         builder.withIssuedAt(Instant.now());
-        builder.withExpiresAt(Instant.now().plusSeconds(30));
+        builder.withExpiresAt(Instant.now().plusSeconds(3000));
         return builder.sign(Algorithm.HMAC256(SECRET_KEY));
     }
 
